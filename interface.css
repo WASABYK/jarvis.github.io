@@ -165,3 +165,91 @@ body {
 .system-status {
     animation: pulse 3s infinite;
 }
+
+
+/* Базовые стили остаются прежними */
+
+
+/* Адаптация для планшетов (768px - 1024px) */
+
+@media (max-width: 1024px) {
+    .time {
+        font-size: 4rem;
+    }
+    .weather-display {
+        min-width: 250px;
+        padding: 15px;
+    }
+    .temperature {
+        font-size: 2rem;
+    }
+    .sensor-data {
+        gap: 20px;
+    }
+}
+
+
+/* Адаптация для мобильных (до 768px) */
+
+@media (max-width: 768px) {
+    .jarvis-container {
+        padding: 15px;
+    }
+    .time {
+        font-size: 3rem;
+        letter-spacing: 3px;
+    }
+    .date {
+        font-size: 1.2rem;
+    }
+    .weather-display {
+        flex-direction: column;
+        text-align: center;
+        min-width: 200px;
+    }
+    .weather-icon {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+    .sensor-data {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+    .sensor {
+        width: 100%;
+        max-width: 200px;
+    }
+    .system-message {
+        font-size: 1rem;
+        padding: 0 10px;
+    }
+}
+
+
+/* Очень маленькие экраны (до 480px) */
+
+@media (max-width: 480px) {
+    .time {
+        font-size: 2.5rem;
+    }
+    .date {
+        font-size: 1rem;
+    }
+    .temperature {
+        font-size: 1.8rem;
+    }
+    .weather-desc,
+    .location {
+        font-size: 0.9rem;
+    }
+}
+
+
+/* Улучшение для тач-устройств */
+
+button,
+.sensor {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
