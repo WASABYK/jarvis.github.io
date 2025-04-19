@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.A.R.V.I.S. Interface</title>
+    <link rel="stylesheet" href="interface.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="jarvis-container">
+        <div class="status-bar">
+            <div class="system-status">СИСТЕМА АКТИВНА</div>
+            <div class="security-status">ЗАЩИТА: 100%</div>
+        </div>
+
+        <div class="main-display">
+            <div class="time-display">
+                <div class="time" id="time">--:--:--</div>
+                <div class="date" id="date">-- --- ----</div>
+            </div>
+
+            <div class="weather-display">
+                <div class="weather-icon" id="weather-icon"></div>
+                <div class="weather-info">
+                    <div class="temperature" id="temperature">--°C</div>
+                    <div class="weather-desc" id="weather-desc">Загрузка...</div>
+                    <div class="location" id="location">МАНХЭТТЕН</div>
+                </div>
+            </div>
+
+            <div class="system-message">
+                <p>Добрый вечер, сэр. Все системы функционируют нормально.</p>
+            </div>
+        </div>
+
+        <div class="sensor-data">
+            <div class="sensor">
+                <div class="sensor-label">ВНЕШНЯЯ ТЕМПЕРАТУРА</div>
+                <div class="sensor-value" id="external-temp">24°C</div>
+            </div>
+            <div class="sensor">
+                <div class="sensor-label">ВЛАЖНОСТЬ</div>
+                <div class="sensor-value" id="humidity">45%</div>
+            </div>
+            <div class="sensor">
+                <div class="sensor-label">АТМОСФЕРНОЕ ДАВЛЕНИЕ</div>
+                <div class="sensor-value" id="pressure">1012 hPa</div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="jarvis-sound" src="jarvis-beep.mp3" preload="auto"></audio>
+    <script src="script.js"></script>
+</body>
+
+</html>
