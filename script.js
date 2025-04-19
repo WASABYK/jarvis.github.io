@@ -155,3 +155,23 @@ setInterval(updateTime, 1000);
 
 // Обновление погоды каждые 30 минут
 setInterval(getWeather, 1800000);
+// Добавляем обработчик изменения размера
+window.addEventListener('resize', handleResize);
+
+// Функция для адаптивных изменений
+function handleResize() {
+    const width = window.innerWidth;
+
+    // Пример динамического изменения (можно добавить больше)
+    if (width < 768) {
+        // Для мобильных можно изменить частоту обновления
+        clearInterval(weatherInterval);
+        weatherInterval = setInterval(getWeather, 1200000); // 20 минут
+    } else {
+        clearInterval(weatherInterval);
+        weatherInterval = setInterval(getWeather, 1800000); // 30 минут
+    }
+}
+
+// Инициализация при загрузке
+handleResize();
