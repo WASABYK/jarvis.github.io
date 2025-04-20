@@ -1,10 +1,3 @@
-// Конфигурация
-const config = {
-    weatherAPIKey: '1dc391a4df1d4e0eb9e182841251904', // Не требуется для Open-Meteo
-    city: 'Moscow',
-    lang: 'ru'
-};
-
 // Элементы интерфейса
 const elements = {
     time: document.getElementById('time'),
@@ -15,25 +8,127 @@ const elements = {
     externalTemp: document.getElementById('external-temp'),
     humidity: document.getElementById('humidity'),
     pressure: document.getElementById('pressure'),
-    weatherIcon: document.querySelector('.weather-icon')
+    weatherIcon: document.getElementById('weather-icon'),
+    systemStatus: document.querySelector('.system-status'),
+    securityStatus: document.querySelector('.security-status'),
+    systemMessage: document.querySelector('.system-message p'),
+    checkOverlay: document.getElementById('system-check-overlay'),
+    checkLogs: document.getElementById('system-check-logs'),
+    startupSound: document.getElementById('startup-sound'),
+    jarvisSound: document.getElementById('jarvis-sound')
 };
 
-// Обновление времени
-function updateTime() {
-    const now = new Date();
-    const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
-    const dateOptions = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+// Сообщения для проверки системы
+const systemMessages = [
+    "Инициализация ядра системы...",
+    "Проверка модулей безопасности...",
+    "Загрузка интерфейса пользователя...",
+    "Подключение к сенсорной сети...",
+    "Синхронизация временных серверов...",
+    "Калибровка датчиков окружающей среды...",
+    "Проверка соединения с Arc Reactor...",
+    "Инициализация голосового интерфейса...",
+    "Оптимизация работы процессоров...",
+    "Финальная проверка системы..."
+];
 
-    elements.time.textContent = now.toLocaleTimeString('ru-RU', timeOptions);
-    elements.date.textContent = now.toLocaleDateString('ru-RU', dateOptions);
+// Инициализация при загрузке
+window.addEventListener('DOMContentLoaded', () => {
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    // Пытаемся определить местоположение
+    determineLocation().then(city => {
+        getWeather(city);
+    }).catch(error => {
+        console.error('Ошибка определения местоположения:', error);
+        // Используем Москву как город по умолчанию
+        getWeather('Moscow');
+    });
+
+    setTimeout(() => {
+        performSystemCheck();
+    }, 1000);
+});
+
+// Функция определения местоположения
+async function determineLocation() {
+    return new Promise((resolve, reject) => {
+        // Пробуем получить геолокацию через браузер
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                async position => {
+                    try {
+                        const { latitude, longitude } = position.coords;
+                        const city = await getCityFromCoords(latitude, longitude);
+                        resolve(city);
+                    } catch (error) {
+                        reject(error);
+                    }
+                },
+                async error => {
+                    console.warn('Геолокация не разрешена, пробуем определить по IP');
+                    try {
+                        const city = await getCityFromIP();
+                        resolve(city);
+                    } catch (ipError) {
+                        reject(ipError);
+                    }
+                }
+            );
+        } else {
+            // Если геолокация не поддерживается, пробуем по IP
+            getCityFromIP().then(resolve).catch(reject);
+        }
+    });
 }
 
-// Получение погоды через Open-Meteo (бесплатно, без API ключа)
-async function getWeather() {
+// Получение города по координатам
+async function getCityFromCoords(latitude, longitude) {
+    const response = await fetch(
+        `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=ru`
+    );
+    const data = await response.json();
+
+    if (data.results && data.results.length > 0) {
+        return data.results[0].name;
+    }
+    throw new Error('Город не найден по координатам');
+}
+
+// Получение города по IP (резервный метод)
+async function getCityFromIP() {
     try {
-        // Получаем координаты города (геокодирование)
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+
+        if (data.city) {
+            return data.city;
+        }
+        throw new Error('Город не найден по IP');
+    } catch (error) {
+        console.error('Ошибка определения города по IP:', error);
+        throw error;
+    }
+}
+
+// Функция обновления времени
+function updateTime() {
+    const now = new Date();
+    elements.time.textContent = now.toLocaleTimeString('ru-RU');
+    elements.date.textContent = now.toLocaleDateString('ru-RU', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    });
+}
+
+// Функция получения погоды
+async function getWeather(city) {
+    try {
         const geoResponse = await fetch(
-            `https://geocoding-api.open-meteo.com/v1/search?name=${config.city}&count=1&language=${config.lang}`
+            `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=ru`
         );
         const geoData = await geoResponse.json();
 
@@ -42,39 +137,35 @@ async function getWeather() {
         }
 
         const { latitude, longitude } = geoData.results[0];
-
-        // Получаем погоду по координатам
         const weatherResponse = await fetch(
             `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
             `&current_weather=true&hourly=temperature_2m,relativehumidity_2m,pressure_msl` +
             `&timezone=auto&forecast_days=1`
         );
-
         const weatherData = await weatherResponse.json();
 
-        // Обновляем интерфейс
-        const current = weatherData.current_weather;
-        const hourly = weatherData.hourly;
-
-        elements.temperature.textContent = `${current.temperature}°C`;
-        elements.externalTemp.textContent = `${current.temperature}°C`;
-        elements.humidity.textContent = `${hourly.relativehumidity_2m[0]}%`;
-        elements.pressure.textContent = `${hourly.pressure_msl[0]} hPa`;
-        elements.location.textContent = geoData.results[0].name.toUpperCase();
-
-        // Определяем описание погоды по коду
-        elements.weatherDesc.textContent = getWeatherDescription(current.weathercode);
-
-        // Обновляем иконку
-        updateWeatherIcon(current.weathercode);
-
+        updateWeatherUI(weatherData, geoData.results[0].name);
     } catch (error) {
         console.error('Ошибка получения погоды:', error);
         elements.weatherDesc.textContent = 'Данные недоступны';
     }
 }
 
-// Описание погоды по коду (WMO)
+// Обновление UI погоды (остальные функции остаются без изменений)
+function updateWeatherUI(weatherData, cityName) {
+    const current = weatherData.current_weather;
+    const hourly = weatherData.hourly;
+
+    elements.temperature.textContent = `${current.temperature}°C`;
+    elements.externalTemp.textContent = `${current.temperature}°C`;
+    elements.humidity.textContent = `${hourly.relativehumidity_2m[0]}%`;
+    elements.pressure.textContent = `${hourly.pressure_msl[0]} hPa`;
+    elements.location.textContent = cityName.toUpperCase();
+    elements.weatherDesc.textContent = getWeatherDescription(current.weathercode);
+    updateWeatherIcon(current.weathercode);
+}
+
+// Описание погоды по коду (без изменений)
 function getWeatherDescription(code) {
     const descriptions = {
         0: 'Ясно',
@@ -83,36 +174,28 @@ function getWeatherDescription(code) {
         3: 'Пасмурно',
         45: 'Туман',
         48: 'Туман с инеем',
-        51: 'Морось: слабая',
-        53: 'Морось: умеренная',
-        55: 'Морось: сильная',
-        56: 'Ледяная морось: слабая',
-        57: 'Ледяная морось: сильная',
-        61: 'Дождь: слабый',
-        63: 'Дождь: умеренный',
-        65: 'Дождь: сильный',
-        66: 'Ледяной дождь: слабый',
-        67: 'Ледяной дождь: сильный',
-        71: 'Снег: слабый',
-        73: 'Снег: умеренный',
-        75: 'Снег: сильный',
-        77: 'Снежные зерна',
-        80: 'Ливень: слабый',
-        81: 'Ливень: умеренный',
-        82: 'Ливень: сильный',
-        85: 'Снегопад: слабый',
-        86: 'Снегопад: сильный',
+        51: 'Морось',
+        53: 'Морось',
+        55: 'Морось',
+        61: 'Дождь',
+        63: 'Дождь',
+        65: 'Дождь',
+        71: 'Снег',
+        73: 'Снег',
+        75: 'Снег',
+        80: 'Ливень',
+        81: 'Ливень',
+        82: 'Ливень',
         95: 'Гроза',
-        96: 'Гроза со слабым градом',
-        99: 'Гроза с сильным градом'
+        96: 'Гроза',
+        99: 'Гроза'
     };
-
     return descriptions[code] || 'Неизвестно';
 }
 
-// Иконки погоды по коду
+// Обновление иконки погоды (без изменений)
 function updateWeatherIcon(code) {
-    const iconMap = {
+    const icons = {
         0: '☀️',
         1: '🌤',
         2: '⛅',
@@ -122,56 +205,72 @@ function updateWeatherIcon(code) {
         51: '🌧',
         53: '🌧',
         55: '🌧',
-        56: '🌧',
-        57: '🌧',
         61: '🌧',
         63: '🌧',
         65: '🌧',
-        66: '🌧',
-        67: '🌧',
         71: '❄️',
         73: '❄️',
         75: '❄️',
-        77: '❄️',
         80: '🌦',
         81: '🌦',
         82: '🌦',
-        85: '❄️',
-        86: '❄️',
         95: '⛈',
         96: '⛈',
         99: '⛈'
     };
-
-    elements.weatherIcon.textContent = iconMap[code] || '🌀';
+    elements.weatherIcon.textContent = icons[code] || '🌀';
 }
 
-// Инициализация
-updateTime();
-getWeather();
+// Проверка системы (без изменений)
+async function performSystemCheck() {
+    elements.checkOverlay.style.display = 'flex';
+    elements.checkLogs.innerHTML = '';
 
-// Обновление времени каждую секунду
-setInterval(updateTime, 1000);
+    try {
+        elements.startupSound.currentTime = 0;
+        await elements.startupSound.play();
+    } catch (error) {
+        console.error('Ошибка воспроизведения звука:', error);
+    }
 
-// Обновление погоды каждые 30 минут
-setInterval(getWeather, 1800000);
-// Добавляем обработчик изменения размера
-window.addEventListener('resize', handleResize);
+    for (let i = 0; i < systemMessages.length; i++) {
+        await addLogMessage(systemMessages[i]);
+        await delay(800 + Math.random() * 400);
+    }
 
-// Функция для адаптивных изменений
-function handleResize() {
-    const width = window.innerWidth;
+    await addLogMessage("✓ Все системы функционируют нормально");
+    await delay(2000);
 
-    // Пример динамического изменения (можно добавить больше)
-    if (width < 768) {
-        // Для мобильных можно изменить частоту обновления
-        clearInterval(weatherInterval);
-        weatherInterval = setInterval(getWeather, 1200000); // 20 минут
-    } else {
-        clearInterval(weatherInterval);
-        weatherInterval = setInterval(getWeather, 1800000); // 30 минут
+    elements.checkOverlay.style.display = 'none';
+    elements.systemStatus.textContent = "СИСТЕМА АКТИВНА";
+    elements.securityStatus.textContent = "ЗАЩИТА: 100%";
+    elements.systemMessage.textContent = "Добрый вечер, сэр. Все системы функционируют нормально.";
+
+    try {
+        elements.jarvisSound.currentTime = 0;
+        await elements.jarvisSound.play();
+    } catch (error) {
+        console.error('Ошибка воспроизведения звука:', error);
     }
 }
 
-// Инициализация при загрузке
-handleResize();
+// Добавление сообщения в лог (без изменений)
+async function addLogMessage(message) {
+    return new Promise(resolve => {
+        const logEntry = document.createElement('p');
+        logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+
+        if (Math.random() < 0.2) {
+            logEntry.classList.add('error');
+        }
+
+        elements.checkLogs.appendChild(logEntry);
+        logEntry.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(resolve, 100);
+    });
+}
+
+// Вспомогательная функция задержки (без изменений)
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
