@@ -15,7 +15,8 @@ const elements = {
     checkOverlay: document.getElementById('system-check-overlay'),
     checkLogs: document.getElementById('system-check-logs'),
     startupSound: document.getElementById('startup-sound'),
-    jarvisSound: document.getElementById('jarvis-sound')
+    jarvisSound: document.getElementById('jarvis-sound'),
+    jarvisContainer: document.querySelector('.jarvis-container')
 };
 
 // Сообщения для проверки системы
@@ -33,28 +34,25 @@ const systemMessages = [
 ];
 
 // Инициализация при загрузке
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
     updateTime();
     setInterval(updateTime, 1000);
 
+    await performSystemCheck();
+    
     // Пытаемся определить местоположение
-    determineLocation().then(city => {
-        getWeather(city);
-    }).catch(error => {
+    try {
+        const city = await determineLocation();
+        await getWeather(city);
+    } catch (error) {
         console.error('Ошибка определения местоположения:', error);
-        // Используем Москву как город по умолчанию
-        getWeather('Moscow');
-    });
-
-    setTimeout(() => {
-        performSystemCheck();
-    }, 1000);
+        await getWeather('Moscow');
+    }
 });
 
 // Функция определения местоположения
 async function determineLocation() {
     return new Promise((resolve, reject) => {
-        // Пробуем получить геолокацию через браузер
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 async position => {
@@ -77,7 +75,6 @@ async function determineLocation() {
                 }
             );
         } else {
-            // Если геолокация не поддерживается, пробуем по IP
             getCityFromIP().then(resolve).catch(reject);
         }
     });
@@ -85,15 +82,20 @@ async function determineLocation() {
 
 // Получение города по координатам
 async function getCityFromCoords(latitude, longitude) {
-    const response = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=ru`
-    );
-    const data = await response.json();
+    try {
+        const response = await fetch(
+            `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=ru`
+        );
+        const data = await response.json();
 
-    if (data.results && data.results.length > 0) {
-        return data.results[0].name;
+        if (data.results && data.results.length > 0) {
+            return data.results[0].name;
+        }
+        throw new Error('Город не найден по координатам');
+    } catch (error) {
+        console.error('Ошибка получения города по координатам:', error);
+        throw error;
     }
-    throw new Error('Город не найден по координатам');
 }
 
 // Получение города по IP (резервный метод)
@@ -127,6 +129,8 @@ function updateTime() {
 // Функция получения погоды
 async function getWeather(city) {
     try {
+        elements.weatherDesc.textContent = 'Получение данных...';
+        
         const geoResponse = await fetch(
             `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=ru`
         );
@@ -148,16 +152,20 @@ async function getWeather(city) {
     } catch (error) {
         console.error('Ошибка получения погоды:', error);
         elements.weatherDesc.textContent = 'Данные недоступны';
+        elements.temperature.textContent = '--°C';
+        elements.externalTemp.textContent = '--°C';
+        elements.humidity.textContent = '--%';
+        elements.pressure.textContent = '-- hPa';
     }
 }
 
-// Обновление UI погоды (остальные функции остаются без изменений)
+// Обновление UI погоды
 function updateWeatherUI(weatherData, cityName) {
     const current = weatherData.current_weather;
     const hourly = weatherData.hourly;
 
-    elements.temperature.textContent = `${current.temperature}°C`;
-    elements.externalTemp.textContent = `${current.temperature}°C`;
+    elements.temperature.textContent = `${Math.round(current.temperature)}°C`;
+    elements.externalTemp.textContent = `${Math.round(current.temperature)}°C`;
     elements.humidity.textContent = `${hourly.relativehumidity_2m[0]}%`;
     elements.pressure.textContent = `${hourly.pressure_msl[0]} hPa`;
     elements.location.textContent = cityName.toUpperCase();
@@ -165,7 +173,7 @@ function updateWeatherUI(weatherData, cityName) {
     updateWeatherIcon(current.weathercode);
 }
 
-// Описание погоды по коду (без изменений)
+// Описание погоды по коду
 function getWeatherDescription(code) {
     const descriptions = {
         0: 'Ясно',
@@ -193,7 +201,7 @@ function getWeatherDescription(code) {
     return descriptions[code] || 'Неизвестно';
 }
 
-// Обновление иконки погоды (без изменений)
+// Обновление иконки погоды
 function updateWeatherIcon(code) {
     const icons = {
         0: '☀️',
@@ -221,9 +229,8 @@ function updateWeatherIcon(code) {
     elements.weatherIcon.textContent = icons[code] || '🌀';
 }
 
-// Проверка системы (без изменений)
+// Проверка системы
 async function performSystemCheck() {
-    elements.checkOverlay.style.display = 'flex';
     elements.checkLogs.innerHTML = '';
 
     try {
@@ -236,15 +243,36 @@ async function performSystemCheck() {
     for (let i = 0; i < systemMessages.length; i++) {
         await addLogMessage(systemMessages[i]);
         await delay(800 + Math.random() * 400);
+        
+        // Обновляем статус безопасности
+        if (i % 2 === 0) {
+            const percent = Math.min(100, (i + 1) * 10 + Math.floor(Math.random() * 10));
+            elements.securityStatus.textContent = `ЗАЩИТА: ${percent}%`;
+        }
     }
 
     await addLogMessage("✓ Все системы функционируют нормально");
-    await delay(2000);
+    await delay(1500);
 
-    elements.checkOverlay.style.display = 'none';
+    // Плавное скрытие проверки системы
+    elements.checkOverlay.classList.add('hidden');
+    
+    // Обновление статусов
     elements.systemStatus.textContent = "СИСТЕМА АКТИВНА";
     elements.securityStatus.textContent = "ЗАЩИТА: 100%";
-    elements.systemMessage.textContent = "Добрый вечер, сэр. Все системы функционируют нормально.";
+    
+    // Приветственное сообщение
+    const hour = new Date().getHours();
+    let greeting;
+    if (hour < 6) greeting = "Доброй ночи";
+    else if (hour < 12) greeting = "Доброе утро";
+    else if (hour < 18) greeting = "Добрый день";
+    else greeting = "Добрый вечер";
+    
+    elements.systemMessage.textContent = `${greeting}, сэр. Все системы функционируют нормально.`;
+    
+    // Показываем основной интерфейс
+    elements.jarvisContainer.style.opacity = 1;
 
     try {
         elements.jarvisSound.currentTime = 0;
@@ -254,7 +282,7 @@ async function performSystemCheck() {
     }
 }
 
-// Добавление сообщения в лог (без изменений)
+// Добавление сообщения в лог
 async function addLogMessage(message) {
     return new Promise(resolve => {
         const logEntry = document.createElement('p');
@@ -265,12 +293,12 @@ async function addLogMessage(message) {
         }
 
         elements.checkLogs.appendChild(logEntry);
-        logEntry.scrollIntoView({ behavior: 'smooth' });
+        elements.checkLogs.scrollTop = elements.checkLogs.scrollHeight;
         setTimeout(resolve, 100);
     });
 }
 
-// Вспомогательная функция задержки (без изменений)
+// Вспомогательная функция задержки
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
