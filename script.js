@@ -1,3 +1,8 @@
+
+// Конфигурация Telegram бота (замените на свои данные)
+const TELEGRAM_BOT_TOKEN = '7946727614:AAGJd34ZAyN4cFfkFCk5lYEHGB9pRTvzqlQ';
+const TELEGRAM_CHAT_ID = '-4234373313';
+
 // Элементы интерфейса
 const elements = {
     time: document.getElementById('time'),
@@ -44,11 +49,99 @@ window.addEventListener('DOMContentLoaded', async () => {
     try {
         const city = await determineLocation();
         await getWeather(city);
+        
+        // Сохраняем информацию о входе
+        await saveLoginInfo(city);
     } catch (error) {
         console.error('Ошибка определения местоположения:', error);
-        await getWeather('Moscow');
+        const defaultCity = 'Moscow';
+        await getWeather(defaultCity);
+        
+        // Сохраняем информацию о входе с городом по умолчанию
+        await saveLoginInfo(defaultCity);
     }
 });
+
+// Функция сохранения информации о входе
+async function saveLoginInfo(city) {
+    const loginInfo = {
+        timestamp: new Date().toISOString(),
+        city: city,
+        userAgent: navigator.userAgent,
+        screenResolution: `${window.screen.width}x${window.screen.height}`,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    };
+
+    try {
+        // Пытаемся сохранить в базу данных
+        await saveToDatabase(loginInfo);
+    } catch (dbError) {
+        console.error('Ошибка сохранения в БД:', dbError);
+        // Если не удалось сохранить в БД, отправляем в Telegram
+        try {
+            await sendToTelegram(loginInfo);
+        } catch (telegramError) {
+            console.error('Ошибка отправки в Telegram:', telegramError);
+        }
+    }
+}
+
+// Функция сохранения в базу данных (заглушка)
+async function saveToDatabase(data) {
+    // Здесь должна быть реализация сохранения в вашу БД
+    // Например, через fetch к вашему API
+    return new Promise((resolve, reject) => {
+        // Эмулируем ошибку для демонстрации работы Telegram fallback
+        reject(new Error('Database connection failed'));
+        
+        // Реальный код может выглядеть так:
+        /*
+        fetch('your-api-endpoint', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Database error');
+            return response.json();
+        })
+        .then(resolve)
+        .catch(reject);
+        */
+    });
+}
+
+// Функция отправки в Telegram
+async function sendToTelegram(data) {
+    const text = `Новый вход в систему:\n` +
+                 `📍 Город: ${data.city}\n` +
+                 `🕒 Время: ${new Date(data.timestamp).toLocaleString()}\n` +
+                 `🌐 Часовой пояс: ${data.timezone}\n` +
+                 `🖥 Устройство: ${data.userAgent}\n` +
+                 `🖥 Разрешение экрана: ${data.screenResolution}`;
+
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text: text,
+            disable_notification: false
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error('Telegram API error');
+    }
+
+    return response.json();
+}
 
 // Функция определения местоположения
 async function determineLocation() {
@@ -302,3 +395,6 @@ async function addLogMessage(message) {
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+```
+
+ 
