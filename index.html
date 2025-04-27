@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,12 +7,11 @@
     <link rel="stylesheet" href="interface.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
     <div class="jarvis-container">
         <div class="status-bar">
-            <div class="system-status">СИСТЕМА АКТИВНА</div>
-            <div class="security-status">ЗАЩИТА: 100%</div>
+            <div class="system-status">ИНИЦИАЛИЗАЦИЯ</div>
+            <div class="security-status">ЗАЩИТА: 0%</div>
         </div>
 
         <div class="main-display">
@@ -23,7 +21,7 @@
             </div>
 
             <div class="weather-display">
-                <div class="weather-icon" id="weather-icon"></div>
+                <div class="weather-icon" id="weather-icon">🌀</div>
                 <div class="weather-info">
                     <div class="temperature" id="temperature">--°C</div>
                     <div class="weather-desc" id="weather-desc">Загрузка...</div>
@@ -32,51 +30,36 @@
             </div>
 
             <div class="system-message">
-                <p>Добрый вечер, сэр. Все системы функционируют нормально.</p>
+                <p>Инициализация системы, пожалуйста, подождите...</p>
             </div>
         </div>
 
         <div class="sensor-data">
             <div class="sensor">
                 <div class="sensor-label">ВНЕШНЯЯ ТЕМПЕРАТУРА</div>
-                <div class="sensor-value" id="external-temp">24°C</div>
+                <div class="sensor-value" id="external-temp">--°C</div>
             </div>
             <div class="sensor">
                 <div class="sensor-label">ВЛАЖНОСТЬ</div>
-                <div class="sensor-value" id="humidity">45%</div>
+                <div class="sensor-value" id="humidity">--%</div>
             </div>
             <div class="sensor">
                 <div class="sensor-label">АТМОСФЕРНОЕ ДАВЛЕНИЕ</div>
-                <div class="sensor-value" id="pressure">1012 hPa</div>
+                <div class="sensor-value" id="pressure">-- hPa</div>
             </div>
         </div>
     </div>
-    <audio id="startup-sound" src="D:\VsCode\workJARVIS4.0\jarvis-voice-pack_adeac3d042_VSTHEMES-ORG\Jarvis Sound Pack от Jarvis Desktop\startup.wav"></audio>
 
-    <audio id="jarvis-sound" src="D:\VsCode\workJARVIS4.0\th_th_pp_th_n_th2th_n_-th_n_th_th2thbn_n_n_th2th_thb.wav" preload="auto"></audio>
+    <audio id="startup-sound" src="sounds/startup.wav" preload="auto"></audio>
+    <audio id="jarvis-sound" src="sounds/welcome.wav" preload="auto"></audio>
+
+    <div class="system-check-overlay" id="system-check-overlay">
+        <div class="system-check-container">
+            <div class="system-check-header">ПРОВЕРКА СИСТЕМЫ</div>
+            <div class="system-check-logs" id="system-check-logs"></div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
-    <div class="system-check-overlay" id="system-check-overlay">
-        <div class="system-check-container">
-            <div class="system-check-header">ПРОВЕРКА СИСТЕМЫ</div>
-            <div class="system-check-logs" id="system-check-logs"></div>
-        </div>
-    </div>
-    <div class="system-check-overlay" id="system-check-overlay">
-        <div class="system-check-container">
-            <div class="system-check-header">ПРОВЕРКА СИСТЕМЫ</div>
-            <div class="system-check-logs" id="system-check-logs"></div>
-        </div>
-    </div>
-
 </body>
-<!-- Для iOS -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-<!-- Для Android -->
-<meta name="mobile-web-app-capable" content="yes">
-
-<!-- Предотвращение масштабирования -->
-<meta name="HandheldFriendly" content="true">
-
 </html>
