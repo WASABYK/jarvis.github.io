@@ -1,18 +1,28 @@
 :root {
     --jarvis-blue: rgba(0, 150, 255, 0.8);
+    --jarvis-blue-bright: rgba(0, 200, 255, 0.9);
     --jarvis-glow: 0 0 10px rgba(0, 150, 255, 0.8);
     --jarvis-dark: rgba(0, 20, 40, 0.9);
+    --jarvis-dark-solid: rgb(0, 10, 20);
+    --transition-speed: 0.3s;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body {
     margin: 0;
     padding: 0;
-    background: url('jarvis-bg.jpg') no-repeat center center fixed;
+    background: var(--jarvis-dark-solid) url('images/jarvis-bg.jpg') no-repeat center center fixed;
     background-size: cover;
     font-family: 'Orbitron', sans-serif;
     color: var(--jarvis-blue);
     overflow: hidden;
     height: 100vh;
+    position: relative;
 }
 
 .jarvis-container {
@@ -21,9 +31,16 @@ body {
     display: flex;
     flex-direction: column;
     padding: 20px;
-    box-sizing: border-box;
-    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(5px);
+    opacity: 0;
+    animation: fadeIn 2s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
 }
 
 .status-bar {
@@ -42,11 +59,12 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 40px;
 }
 
 .time-display {
     text-align: center;
-    margin-bottom: 50px;
+    margin-bottom: 20px;
 }
 
 .time {
@@ -55,32 +73,37 @@ body {
     letter-spacing: 5px;
     text-shadow: var(--jarvis-glow);
     margin-bottom: 10px;
+    transition: var(--transition-speed);
 }
 
 .date {
     font-size: 1.5rem;
     letter-spacing: 3px;
     opacity: 0.8;
+    transition: var(--transition-speed);
 }
 
 .weather-display {
     display: flex;
     align-items: center;
-    margin-bottom: 40px;
     background: var(--jarvis-dark);
     border-radius: 15px;
     padding: 20px;
     border: 1px solid var(--jarvis-blue);
     box-shadow: var(--jarvis-glow);
     min-width: 300px;
+    transition: var(--transition-speed);
 }
 
 .weather-icon {
     width: 80px;
     height: 80px;
     margin-right: 20px;
-    background: url('weather-icon.png') no-repeat center center;
-    background-size: contain;
+    font-size: 3.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-speed);
 }
 
 .weather-info {
@@ -91,6 +114,7 @@ body {
     font-size: 2.5rem;
     font-weight: 500;
     margin-bottom: 5px;
+    transition: var(--transition-speed);
 }
 
 .weather-desc {
@@ -99,12 +123,14 @@ body {
     letter-spacing: 1px;
     opacity: 0.8;
     margin-bottom: 10px;
+    transition: var(--transition-speed);
 }
 
 .location {
     font-size: 1.2rem;
     letter-spacing: 2px;
-    color: rgba(0, 200, 255, 0.9);
+    color: var(--jarvis-blue-bright);
+    transition: var(--transition-speed);
 }
 
 .system-message {
@@ -114,7 +140,8 @@ body {
     line-height: 1.6;
     letter-spacing: 1px;
     opacity: 0.9;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
+    transition: var(--transition-speed);
 }
 
 .sensor-data {
@@ -122,6 +149,7 @@ body {
     justify-content: center;
     gap: 30px;
     margin-top: auto;
+    flex-wrap: wrap;
 }
 
 .sensor {
@@ -132,6 +160,7 @@ body {
     box-shadow: var(--jarvis-glow);
     text-align: center;
     min-width: 150px;
+    transition: var(--transition-speed);
 }
 
 .sensor-label {
@@ -145,139 +174,44 @@ body {
 .sensor-value {
     font-size: 1.5rem;
     font-weight: 500;
+    transition: var(--transition-speed);
 }
 
-
 /* Анимации */
-
 @keyframes pulse {
-    0% {
-        opacity: 0.7;
-    }
-    50% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0.7;
-    }
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
 }
 
 .system-status {
     animation: pulse 3s infinite;
 }
 
-
-/* Базовые стили остаются прежними */
-
-
-/* Адаптация для планшетов (768px - 1024px) */
-
-@media (max-width: 1024px) {
-    .time {
-        font-size: 4rem;
-    }
-    .weather-display {
-        min-width: 250px;
-        padding: 15px;
-    }
-    .temperature {
-        font-size: 2rem;
-    }
-    .sensor-data {
-        gap: 20px;
-    }
-}
-
-
-/* Адаптация для мобильных (до 768px) */
-
-@media (max-width: 768px) {
-    .jarvis-container {
-        padding: 15px;
-    }
-    .time {
-        font-size: 3rem;
-        letter-spacing: 3px;
-    }
-    .date {
-        font-size: 1.2rem;
-    }
-    .weather-display {
-        flex-direction: column;
-        text-align: center;
-        min-width: 200px;
-    }
-    .weather-icon {
-        margin-right: 0;
-        margin-bottom: 15px;
-    }
-    .sensor-data {
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-    }
-    .sensor {
-        width: 100%;
-        max-width: 200px;
-    }
-    .system-message {
-        font-size: 1rem;
-        padding: 0 10px;
-    }
-}
-
-
-/* Очень маленькие экраны (до 480px) */
-
-@media (max-width: 480px) {
-    .time {
-        font-size: 2.5rem;
-    }
-    .date {
-        font-size: 1rem;
-    }
-    .temperature {
-        font-size: 1.8rem;
-    }
-    .weather-desc,
-    .location {
-        font-size: 0.9rem;
-    }
-}
-
-
-/* Улучшение для тач-устройств */
-
-button,
-.sensor {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-}
-
+/* Системная проверка */
 .system-check-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 20, 40, 0.95);
+    background-color: rgba(0, 10, 20, 0.98);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    opacity: 0;
-    pointer-events: none;
+    opacity: 1;
     transition: opacity 0.5s ease;
 }
 
-.system-check-overlay.active {
-    opacity: 1;
-    pointer-events: all;
+.system-check-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .system-check-container {
     width: 80%;
-    max-width: 600px;
+    max-width: 800px;
     background-color: var(--jarvis-dark);
     border: 2px solid var(--jarvis-blue);
     border-radius: 10px;
@@ -292,139 +226,32 @@ button,
     text-transform: uppercase;
     letter-spacing: 3px;
     color: var(--jarvis-blue);
+    text-shadow: var(--jarvis-glow);
 }
 
 .system-check-logs {
-    height: 300px;
+    height: 60vh;
+    max-height: 500px;
     overflow-y: auto;
     font-family: 'Courier New', monospace;
     font-size: 0.9rem;
     line-height: 1.5;
-}
-
-.system-check-logs p {
-    margin: 5px 0;
-    padding: 3px 0;
-    border-bottom: 1px solid rgba(0, 150, 255, 0.2);
-    animation: logEntry 0.3s ease;
-}
-
-@keyframes logEntry {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.start-button {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 15px 30px;
-    background: var(--jarvis-blue);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.2rem;
-    cursor: pointer;
-    z-index: 9999;
-    box-shadow: 0 0 15px var(--jarvis-blue);
-}
-
-.start-button:hover {
-    background: #0099ff;
-}
-
-
-/* Стили для кнопки активации */
-
-.start-button {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 15px 30px;
-    background: var(--jarvis-blue);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-family: 'Orbitron', sans-serif;
-    font-size: 1.2rem;
-    cursor: pointer;
-    z-index: 9999;
-    box-shadow: 0 0 15px var(--jarvis-blue);
-}
-
-.start-button:hover {
-    background: #0099ff;
-}
-
-
-/* Стили для логов проверки системы */
-
-.system-check-overlay {
-    display: none;
-    /* По умолчанию скрыто */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 20, 40, 0.95);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.system-check-container {
-    width: 80%;
-    max-width: 600px;
-    background-color: var(--jarvis-dark);
-    border: 2px solid var(--jarvis-blue);
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: var(--jarvis-glow);
-}
-
-.system-check-header {
-    font-size: 1.5rem;
-    text-align: center;
-    margin-bottom: 20px;
-    text-transform: uppercase;
-    letter-spacing: 3px;
     color: var(--jarvis-blue);
-}
-
-.system-check-logs {
-    height: 300px;
-    overflow-y: auto;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
-    line-height: 1.5;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
 }
 
 .system-check-logs p {
     margin: 5px 0;
     padding: 3px 0;
-    border-bottom: 1px solid rgba(0, 150, 255, 0.2);
+    border-bottom: 1px solid rgba(0, 150, 255, 0.1);
     animation: logEntry 0.3s ease;
 }
 
 @keyframes logEntry {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .system-check-logs p.error {
@@ -433,14 +260,36 @@ button,
 }
 
 @keyframes errorPulse {
-    0% {
-        color: #ff5555;
-    }
-    50% {
-        color: #ff0000;
-        text-shadow: 0 0 5px #ff0000;
-    }
-    100% {
-        color: #ff5555;
-    }
+    0% { color: #ff5555; }
+    50% { color: #ff0000; text-shadow: 0 0 5px #ff0000; }
+    100% { color: #ff5555; }
+}
+
+/* Адаптация для планшетов */
+@media (max-width: 1024px) {
+    .time { font-size: 4rem; }
+    .weather-display { min-width: 250px; padding: 15px; }
+    .temperature { font-size: 2rem; }
+    .sensor-data { gap: 20px; }
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+    .jarvis-container { padding: 15px; }
+    .time { font-size: 3rem; letter-spacing: 3px; }
+    .date { font-size: 1.2rem; }
+    .weather-display { flex-direction: column; text-align: center; }
+    .weather-icon { margin-right: 0; margin-bottom: 15px; }
+    .sensor-data { flex-direction: column; align-items: center; gap: 15px; }
+    .sensor { width: 100%; max-width: 200px; }
+    .system-message { font-size: 1rem; padding: 0 10px; }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 480px) {
+    .time { font-size: 2.5rem; }
+    .date { font-size: 1rem; }
+    .temperature { font-size: 1.8rem; }
+    .weather-desc, .location { font-size: 0.9rem; }
+    .system-check-container { width: 95%; padding: 10px; }
 }
