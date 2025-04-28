@@ -1,7 +1,7 @@
 
 // Конфигурация Telegram бота (замените на свои данные)
-const TELEGRAM_BOT_TOKEN = '7946727614:AAGJd34ZAyN4cFfkFCk5lYEHGB9pRTvzqlQ';
-const TELEGRAM_CHAT_ID = '-4234373313';
+const TELEGRAM_BOT_TOKEN = '';
+const TELEGRAM_CHAT_ID = '-';
 
 // Элементы интерфейса
 const elements = {
